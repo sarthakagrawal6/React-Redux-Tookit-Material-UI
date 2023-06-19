@@ -1,5 +1,4 @@
 import React from "react";
-import logo from "./logo.svg";
 import {
   StyledEngineProvider,
   CssBaseline,
@@ -13,6 +12,8 @@ import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 // import { PersistGate } from "redux-persist/integration/react";
 import { RouteManager } from "./routes";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 
 const themeCustomization = {
   opened: true,
@@ -32,6 +33,7 @@ function App() {
           <BrowserRouter>
             <RouteManager />
           </BrowserRouter>
+          <ToastContainer />
           {/* </PersistGate> */}
         </Provider>
       </ThemeProvider>

@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { RootState } from "store";
 
 interface User {
   firstName: string;
@@ -17,11 +18,9 @@ export const authSlice = createSlice({
     token: null,
   } as Auth,
   reducers: {
-    setUser: (state, action) => {
+    setUser: (state, { payload }: { payload: User }) => {
       state.user = {
-        firstName: "Sarthak",
-        lastName: "Agrawal",
-        email: "sarthak@yopmail.com",
+        ...payload,
       };
     },
   },
@@ -29,7 +28,7 @@ export const authSlice = createSlice({
 
 export const { setUser } = authSlice.actions;
 
-export const selectUser = (state: Auth) => state.user;
-export const selectToken = (state: Auth) => state.token;
+export const selectUser = (state: RootState) => state.auth.user;
+export const selectToken = (state: RootState) => state.auth.token;
 
 export default authSlice.reducer;

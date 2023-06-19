@@ -7,6 +7,7 @@ const ROUTES = {
 
   FEATURE_ROUTES: {
     DASHBOARD: "/dashboard",
+    CATEGORIES: "/categories",
   },
 };
 

@@ -1,6 +1,16 @@
 export default function componentStyleOverrides(theme: any) {
   const bgColor = theme.colors?.grey50;
   return {
+    MuiLinearProgress: {
+      styleOverrides: {
+        root: {
+          backgroundColor: theme.colors.secondaryMain,
+        },
+        bar: {
+          backgroundColor: theme.colors.secondary200,
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
