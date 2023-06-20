@@ -1,32 +1,40 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { AxiosError } from "axios";
-import { ApiState } from "interfaces/api.interface";
+import { ApiState, PaginatedQuery } from "interfaces/api.interface";
 import { RootState } from "store";
 import { http } from "utils/http.service";
-import { toastService } from "utils/toast.service";
+import { Category } from "./categories.interface";
+import { DEFAULT_PAGE_OPTIONS } from "constants/api.constants";
 
-interface Category {
-  _id: string;
-  categoryName: string;
-  count: number;
-  createdAt: Date | string;
-  status: number;
-  updatedAt: Date | string;
-}
 interface Categories {
   categories: Array<Category>;
   status: ApiState;
-  error: any;
+  error: string | null;
+  total: number;
+  pageOptions: PaginatedQuery;
 }
 
 export const categoriesSlice = createSlice({
   name: "categories",
   initialState: {
     categories: [],
+    total: 0,
+    pageOptions: {
+      ...DEFAULT_PAGE_OPTIONS,
+    },
     error: null,
     status: "idle",
   } as Categories,
-  reducers: {},
+  reducers: {
+    setCategoriesPaginatedQuery: (
+      state,
+      { payload }: { payload: PaginatedQuery }
+    ) => {
+      state.pageOptions.pageSize = payload.pageSize;
+      state.pageOptions.pageIndex = payload.pageIndex;
+      state.pageOptions.sort_by = payload.sort_by;
+      state.pageOptions.sort_order = payload.sort_order;
+    },
+  },
   extraReducers(builder) {
     builder
       .addCase(getCategories.pending, (state, action) => {
@@ -34,33 +42,33 @@ export const categoriesSlice = createSlice({
       })
       .addCase(getCategories.fulfilled, (state, action) => {
         state.status = "succeeded";
-
-        // Add any fetched posts to the array
+        // Add any fetched categories to the array
         state.categories = [...action.payload.result.data];
+        state.total = action.payload.result.total;
+        state.pageOptions.pageIndex = action.payload.result.pageIndex;
+        state.pageOptions.pageSize = action.payload.result.pageSize;
       })
       .addCase(getCategories.rejected, (state, action) => {
         state.status = "failed";
-        console.log(action);
-
-        state.error = action.error.message;
-        // toastService.showToast(action.error.message);
+        state.error = action.error.message as string;
       });
   },
 });
+
 export const getCategories = createAsyncThunk(
   "categories/getCategories",
-  async (_, { rejectWithValue }) => {
+  async (query: PaginatedQuery, { rejectWithValue }) => {
     try {
-      const response = await http.get(
-        "admin/categories?pageIndex=0&pageSize=10"
-      );
+      const response = await http.get("admin/categories", query);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error);
+      rejectWithValue(error);
     }
   }
 );
-export const selectCategoriesStatus = (state: RootState) =>
-  state.categories.status;
+
+export const selectCategories = (state: RootState) => state.categories;
+
+export const { setCategoriesPaginatedQuery } = categoriesSlice.actions;
 
 export default categoriesSlice.reducer;

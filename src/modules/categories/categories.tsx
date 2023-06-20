@@ -1,52 +1,59 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useEffect } from "react";
 import { useAppDispatch } from "store";
-import { getCategories, selectCategoriesStatus } from "./categories.slice";
+import {
+  getCategories,
+  selectCategories,
+  setCategoriesPaginatedQuery,
+} from "./categories.slice";
 import { useSelector } from "react-redux";
-import { Skeleton } from "@mui/material";
-import Loader from "components/loader";
+import CommonTable from "components/common-table";
+import { CategoriesSource } from "./categories.model";
+import { Category } from "./categories.interface";
+import { convertDate, convertStatus } from "utils/helper";
+import { PaginatedQuery } from "interfaces/api.interface";
 
 const Categories = () => {
   const dispatch = useAppDispatch();
-  const [searchText, setSearchText] = useState<string>("");
-  const status = useSelector(selectCategoriesStatus);
+  const { categories, total, pageOptions, status } =
+    useSelector(selectCategories);
+  const categoriesSource = new CategoriesSource();
+
   useEffect(() => {
-    dispatch(getCategories());
-    return () => {};
-  }, [dispatch, searchText]);
-
-  const search = () => {
-    setSearchText("abc");
-  };
-
-  const renderLoading = () => {
-    return (
-      <Fragment>
-        <Loader />
-        <Skeleton
-          height={100}
-          width={"100%"}
-          variant="rectangular"
-          animation="wave"
-          sx={{ borderRadius: "8px", marginTop: "16px" }}
-        />
-        <Skeleton
-          height={500}
-          width={"100%"}
-          variant="rectangular"
-          animation="wave"
-          sx={{ borderRadius: "8px", marginTop: "16px" }}
-        />
-      </Fragment>
+    dispatch(
+      getCategories({
+        pageSize: pageOptions.pageSize,
+        pageIndex: pageOptions.pageIndex,
+        sort_by: pageOptions.sort_by,
+        sort_order: pageOptions.sort_order,
+      })
     );
+    return () => {};
+  }, [dispatch, pageOptions]);
+
+  const handlePageOptionsChanged = (data: PaginatedQuery) => {
+    dispatch(setCategoriesPaginatedQuery(data));
   };
 
   const renderView = () => {
-    if (status === "loading") {
-      return renderLoading();
-    }
     return (
       <Fragment>
-        <h1>Table loaded</h1>
+        <CommonTable
+          config={categoriesSource}
+          rows={categories}
+          total={total}
+          pageOptions={pageOptions}
+          status={status}
+          handlePageOptionsChanged={handlePageOptionsChanged}
+        >
+          {{
+            createdAt: (item: Category) => <>{convertDate(item.createdAt)}</>,
+            status: (item: Category) => (
+              <span style={{ color: item.status === 1 ? "green" : "red" }}>
+                {convertStatus(item.status)}
+              </span>
+            ),
+          }}
+        </CommonTable>
       </Fragment>
     );
   };

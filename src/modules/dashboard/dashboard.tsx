@@ -7,9 +7,7 @@ const Dashboard = () => {
 
   useEffect(() => {}, []);
 
-  const getPosts = () => {
-    console.log("Came");
-  };
+  const getPosts = () => {};
 
   const handleUser = () => {
     getPosts();

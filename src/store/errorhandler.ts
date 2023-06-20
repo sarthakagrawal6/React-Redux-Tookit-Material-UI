@@ -7,8 +7,6 @@ import { toastService } from "utils/toast.service";
  */
 export const rtkQueryErrorLogger: Middleware =
   (api: MiddlewareAPI) => (next) => (action) => {
-    console.log(action);
-
     // RTK Query uses `createAsyncThunk` from redux-toolkit under the hood, so we're able to utilize these matchers!
     if (isRejectedWithValue(action)) {
       if (action.payload && action.payload.response) {
