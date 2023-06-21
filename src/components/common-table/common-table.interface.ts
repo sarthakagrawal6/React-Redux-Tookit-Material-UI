@@ -11,6 +11,7 @@ export interface CommonTableOptions {
   pagination: boolean;
   tableTitle: string;
   showIndex?: boolean;
+  filterComponent?: () => JSX.Element;
 
   /**
    * @description a function to run when add button is clicked on common table component

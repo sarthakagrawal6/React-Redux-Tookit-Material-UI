@@ -20,9 +20,10 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import { CommonTableColumn, CommonTableConfig } from "./common-table.interface";
 import { ApiState, PaginatedQuery } from "interfaces/api.interface";
-import { Skeleton } from "@mui/material";
+import { Dialog, DialogTitle, Skeleton } from "@mui/material";
 import Loader from "components/loader";
-import { Fragment } from "react";
+import { Fragment, useEffect } from "react";
+import FilterWrapper from "./filter-wrapper";
 
 type Order = "asc" | "desc";
 
@@ -107,10 +108,11 @@ interface CommonTableToolbarProps {
   numSelected: number;
   filter?: boolean;
   tableTitle: string;
+  handleFilterOpen: () => void;
 }
 
 function CommonTableToolbar(props: CommonTableToolbarProps) {
-  const { numSelected, filter, tableTitle } = props;
+  const { numSelected, filter, tableTitle, handleFilterOpen } = props;
 
   return (
     <Toolbar
@@ -153,7 +155,7 @@ function CommonTableToolbar(props: CommonTableToolbarProps) {
         </Tooltip>
       ) : filter ? (
         <Tooltip title="Filter list">
-          <IconButton>
+          <IconButton onClick={handleFilterOpen}>
             <FilterListIcon />
           </IconButton>
         </Tooltip>
@@ -171,6 +173,10 @@ interface CommonTableProps {
   handlePageOptionsChanged: (data: PaginatedQuery) => void;
 }
 export default function CommonTable(props: CommonTableProps) {
+  useEffect(() => {
+    console.log(props.config.options.filterComponent);
+  }, []);
+
   const {
     config,
     rows,
@@ -180,7 +186,11 @@ export default function CommonTable(props: CommonTableProps) {
     status,
     handlePageOptionsChanged,
   } = props;
-
+  const {
+    config: {
+      options: { filterComponent },
+    },
+  } = props;
   const [order, setOrder] = React.useState<Order>(
     pageOptions.sort_order || "asc"
   );
@@ -190,6 +200,7 @@ export default function CommonTable(props: CommonTableProps) {
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(pageOptions.pageIndex);
   const [rowsPerPage, setRowsPerPage] = React.useState(pageOptions.pageSize);
+  const [filterOpen, setFilterOpen] = React.useState(false);
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
@@ -250,7 +261,12 @@ export default function CommonTable(props: CommonTableProps) {
       pageSize: parseInt(event.target.value, 10),
     });
   };
-
+  const handleFilterClose = () => {
+    setFilterOpen(false);
+  };
+  const handleFilterOpen = () => {
+    setFilterOpen(true);
+  };
   const isSelected = (name: string) => selected.indexOf(name) !== -1;
   const renderLoading = () => {
     return (
@@ -278,6 +294,8 @@ export default function CommonTable(props: CommonTableProps) {
       <div
         style={{ display: "flex", flexDirection: "column", padding: "16px" }}
       >
+        {/* {filterComponent()} */}
+
         <TableContainer>
           <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle">
             <CommonTableHead
@@ -351,16 +369,24 @@ export default function CommonTable(props: CommonTableProps) {
     );
   };
   return (
-    <Box sx={{ width: "100%" }}>
-      <Paper sx={{ width: "100%", mb: 2 }}>
-        <CommonTableToolbar
-          numSelected={selected.length}
-          filter={config.options.filter}
-          tableTitle={config.options.tableTitle}
-        />
-        <>{status === "loading" && renderLoading()}</>
-        <>{status === "succeeded" && renderTable()}</>
-      </Paper>
-    </Box>
+    <Fragment>
+      <Box sx={{ width: "100%" }}>
+        <Paper sx={{ width: "100%", mb: 2 }}>
+          <CommonTableToolbar
+            numSelected={selected.length}
+            filter={config.options.filter}
+            tableTitle={config.options.tableTitle}
+            handleFilterOpen={handleFilterOpen}
+          />
+          <>{status === "loading" && renderLoading()}</>
+          <>{status === "succeeded" && renderTable()}</>
+        </Paper>
+      </Box>
+      <FilterWrapper
+        handleFilterClose={handleFilterClose}
+        filterOpen={filterOpen}
+        filterComponent={filterComponent!}
+      />
+    </Fragment>
   );
 }

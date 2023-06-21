@@ -4,6 +4,7 @@ import {
   CommonTableOptions,
 } from "components/common-table/common-table.interface";
 import { Category } from "./categories.interface";
+import CategoriesFilter from "./categories-filter";
 
 export class CategoriesSource implements CommonTableConfig {
   columns: CommonTableColumn<Category>[] = [
@@ -31,5 +32,6 @@ export class CategoriesSource implements CommonTableConfig {
     filter: true,
     showIndex: true,
     selection: false,
+    filterComponent: CategoriesFilter,
   };
 }
